@@ -58,10 +58,44 @@ function App() {
             <h1>Who lives in my Garage?</h1>
             {/*<Car brand="red"/>*/}
             {cars.map((car) => <Car carId={car.id} brand={car.brand} />)}
+            <FetchData />
             <Football />
             <MyForm />
             <FavoriteColor />
             <Timer />
+        </>
+    );
+}
+
+function FetchData() {
+    const [result, setResult] = useState("");
+    useEffect(() => {
+        // GET request using fetch inside useEffect React hook
+        const headers = { 'Content-Type': 'application/json' }
+        fetch('https://api.npms.io/v2/search?q=react', { headers })
+            .then(async response => {
+                const data = await response.json();
+
+                // check for error response
+                if (!response.ok) {
+                    // get error message from body or default to response statusText
+                    const error = (data && data.message) || response.statusText;
+                    return Promise.reject(error);
+                }
+
+                setResult( data.total )
+            })
+            .catch(error => {
+                setResult(error.toString() );
+                console.error('There was an error!', error);
+            });
+
+// empty dependency array means this effect will only run once (like componentDidMount in classes)
+    }, []);
+    return (
+        <>
+            <h1>endpoint result  {result}!</h1>
+
         </>
     );
 }
