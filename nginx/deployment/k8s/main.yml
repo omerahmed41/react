@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: $BITBUCKET_REPO_SLUG
+  namespace: $NAMESPACE
+spec:
+  replicas: 1
+  progressDeadlineSeconds: 120
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1        # how many pods we can add at a time
+      maxUnavailable: 0  # maxUnavailable define how many pods can be unavailable # during the rolling update
+  selector:
+    matchLabels:
+      name: $BITBUCKET_REPO_SLUG
+  template:
+    metadata:
+      name: $BITBUCKET_REPO_SLUG
+      labels:
+        name: $BITBUCKET_REPO_SLUG
+    spec:
+      containers:
+      - name: $BITBUCKET_REPO_SLUG
+        image: $DOCKER_REGISTRY/$BITBUCKET_REPO_SLUG:$IMAGE_TAG
+        ports:
+        - name: http
+          containerPort: 80
+        # envFrom:
+        # - configMapRef:
+        #     name: $BITBUCKET_REPO_SLUG
+        resources:
+          requests:
+            memory: "200Mi"
+          limits:
+            cpu: "0.5"
+            memory: "400Mi"
+      restartPolicy: Always
+      # imagePullSecrets:
+      # - name: docker-image-pull-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: $BITBUCKET_REPO_SLUG
+  name: $BITBUCKET_REPO_SLUG
+  namespace: $NAMESPACE
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+  selector:
+    name: $BITBUCKET_REPO_SLUG
+  type: ClusterIP
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  name: $BITBUCKET_REPO_SLUG
+  namespace: $NAMESPACE
+spec:
+  rules:
+  - host: proxy.cobblestone.site
+    http:
+        paths:
+        - backend:
+            serviceName: $BITBUCKET_REPO_SLUG
+            servicePort: 80
+          path: /
+  - host: proxy.int.cobblestone.site
+    http:
+        paths:
+        - backend:
+            serviceName: $BITBUCKET_REPO_SLUG
+            servicePort: 80
+          path: /
