@@ -5,6 +5,12 @@ import { useState, useEffect  } from 'react';
 import ReactDOM from 'react-dom/client';
 import Car from './Car.js';
 import MyForm from './Form.js';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Layout from "./pages/Layout";
+import Home from "./pages/Home";
+import Blogs from "./pages/Blogs";
+import Contact from "./pages/Contact";
+import NoPage from "./pages/NoPage";
 
 function Timer() {
     const [count, setCount] = useState(0);
@@ -31,14 +37,24 @@ function Football() {
     );
 }
 
-function Garage() {
+function App() {
     const cars = [
         {id: 1, brand: 'Ford'},
         {id: 2, brand: 'BMW'},
         {id: 3, brand: 'Audi'}
     ];
     return (
-        <>
+    <>
+        <BrowserRouter>
+            <Routes>
+                <Route path="/" element={<Layout />}>
+                    <Route index element={<Home />} />
+                    <Route path="blogs" element={<Blogs />} />
+                    <Route path="contact" element={<Contact />} />
+                    <Route path="*" element={<NoPage />} />
+                </Route>
+            </Routes>
+        </BrowserRouter> );
             <h1>Who lives in my Garage?</h1>
             {/*<Car brand="red"/>*/}
             {cars.map((car) => <Car carId={car.id} brand={car.brand} />)}
@@ -76,5 +92,5 @@ function FavoriteColor() {
     );
 }
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<Garage />);
+root.render(<App />);
 
